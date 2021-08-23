@@ -42,30 +42,30 @@ public class TxStreaming {
     @ConfigProperty(name = "inbound.ack_topic")
     public String INBOUND_ACK_TOPIC;
 
-    @ConfigProperty(name="outbound.acked_topic")
+    @ConfigProperty(name = "outbound.acked_topic")
     public String OUTBOUND_ACKED_TOPIC;
 
-    @ConfigProperty(name="outbound.process_topic")
+    @ConfigProperty(name = "outbound.process_topic")
     public String PROCESSED_TRANSACTIONS;
 
-    @ConfigProperty(name="tx_store")
+    @ConfigProperty(name = "tx_store")
     public String TX_STORE;
-
 
     @Produces
     public Topology buildTopology() {
         StreamsBuilder builder = new StreamsBuilder();
         Map<String, String> configurationLog = new HashMap<>();
 
-        StoreBuilder<KeyValueStore <String,String>> txStore = Stores.keyValueStoreBuilder(Stores.persistentKeyValueStore(TX_STORE), Serdes.String(), Serdes.String()).withLoggingEnabled(configurationLog);
+        StoreBuilder<KeyValueStore<String, String>> txStore = Stores
+                .keyValueStoreBuilder(Stores.persistentKeyValueStore(TX_STORE), Serdes.String(), Serdes.String())
+                .withLoggingEnabled(configurationLog);
 
-        //Inbound Acknowledgement Queue which will be joined
-        KStream<String, String> acks = builder.stream("inbound-ack", 
-                                            Consumed.with(Serdes.String(), Serdes.String()));
+        // Inbound Acknowledgement Queue which will be joined
+        KStream<String, String> acks = builder.stream("inbound-ack", Consumed.with(Serdes.String(), Serdes.String()));
 
-        //Initial Builder Stream to join inbound_tx with inbound_ack and send it to the processed queue
-        builder.stream("inbound-tx", 
-                        Consumed.with(Serdes.String(), Serdes.String()))
+        // Initial Builder Stream to join inbound_tx with inbound_ack and send it to the
+        // processed queue
+        builder.stream(INBOUND_TX_TOPIC, Consumed.with(Serdes.String(), Serdes.String()))
                 .outerJoin(acks, (transaction, ack) -> {
                     String ackedMsg = new String();
                     ObjectMapper mapper = new ObjectMapper();
@@ -91,30 +91,28 @@ public class TxStreaming {
                     return ackedMsg;
                 }, JoinWindows.of(Duration.ofSeconds(10)),
                         Joined.with(Serdes.String(), Serdes.String(), Serdes.String()))
-                .groupByKey(Grouped.with(Serdes.String(), Serdes.String()))
-                .reduce(((key, lastValue) -> lastValue))
-                .toStream()
-                .to("outbound-ack", Produced.with(Serdes.String(), Serdes.String()));
+                .groupByKey(Grouped.with(Serdes.String(), Serdes.String())).reduce(((key, lastValue) -> lastValue))
+                .toStream().to("outbound-ack", Produced.with(Serdes.String(), Serdes.String()));
 
-                
         final Topology topology = builder.build();
 
-        //Attach the messages from the Join Queue to a Source and name it InboundTX
-        topology.addSource("InboundTX", new StringDeserializer(), new StringDeserializer(), "outbound-ack");
+        // Attach the messages from the Join Queue to a Source and name it InboundTX
+        topology.addSource(INBOUND_TX_TOPIC, new StringDeserializer(), new StringDeserializer(), "outbound-ack");
 
-        //Attach the processor to the flow, and attache the Source created above to it.
-         topology.addProcessor("TransactionProcessor", new ProcessorSupplier<String,String>(){
+        // Attach the processor to the flow, and attache the Source created above to it.
+        topology.addProcessor("TransactionProcessor", new ProcessorSupplier<String, String>() {
             public Processor<String, String> get() {
                 return new PaymentProcessor();
             }
-         }, "InboundTX");
+        }, "InboundTX");
 
-         //Send the processed messages to the Outbound Queue, 
-         //when they are "done" in the Processor
-         topology.addSink("Sink", PROCESSED_TRANSACTIONS, new StringSerializer(), new StringSerializer(),"TransactionProcessor");
+        // Send the processed messages to the Outbound Queue,
+        // when they are "done" in the Processor
+        topology.addSink("Sink", PROCESSED_TRANSACTIONS, new StringSerializer(), new StringSerializer(),
+                "TransactionProcessor");
 
-         //Add the state store
-         topology.addStateStore(txStore, "TransactionProcessor");
+        // Add the state store
+        topology.addStateStore(txStore, "TransactionProcessor");
 
         return topology;
     }
