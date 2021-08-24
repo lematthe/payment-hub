@@ -1,0 +1,17 @@
+{
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar"
+    ],
+    "microprofile.tools.validation.unknown.excluded": [
+        "*/mp-rest/providers/*/priority",
+        "mp.openapi.schema.*",
+        "kafka-streams.*",
+        "camel.*",
+        "mp.*",
+        "kafka.*",
+        "log4j.*",
+        "INBOUND_TX_TOPIC",
+        "INBOUND_ACK_TOPIC"
+    ]
+}

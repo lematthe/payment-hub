@@ -54,14 +54,13 @@ public class TxStreaming {
     @Produces
     public Topology buildTopology() {
         StreamsBuilder builder = new StreamsBuilder();
-        Map<String, String> configurationLog = new HashMap<>();
 
         StoreBuilder<KeyValueStore<String, String>> txStore = Stores
                 .keyValueStoreBuilder(Stores.persistentKeyValueStore(TX_STORE), Serdes.String(), Serdes.String())
-                .withLoggingEnabled(configurationLog);
+                .withLoggingEnabled(new HashMap<>());
 
         // Inbound Acknowledgement Queue which will be joined
-        KStream<String, String> acks = builder.stream("inbound-ack", Consumed.with(Serdes.String(), Serdes.String()));
+        KStream<String, String> acks = builder.stream(INBOUND_ACK_TOPIC, Consumed.with(Serdes.String(), Serdes.String()));
 
         // Initial Builder Stream to join inbound_tx with inbound_ack and send it to the
         // processed queue
