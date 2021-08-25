@@ -43,12 +43,14 @@ metadata:
   namespace: payment-infra
 spec:
   config:
-    retention.ms: 604800000
+    retention.ms: 10000
     segment.bytes: 1073741824
   partitions: 10
   replicas: 3
 
----apiVersion: kafka.strimzi.io/v1beta2
+---
+
+apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
   name: inbound-ack
@@ -57,7 +59,7 @@ metadata:
   namespace: payment-infra
 spec:
   config:
-    retention.ms: 604800000
+    retention.ms: 10000
     segment.bytes: 1073741824
   partitions: 10
   replicas: 3
@@ -72,7 +74,7 @@ metadata:
   namespace: payment-infra
 spec:
   config:
-    retention.ms: 604800000
+    retention.ms: 10000
     segment.bytes: 1073741824
   partitions: 10
   replicas: 3
@@ -82,6 +84,36 @@ apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
   name: outbound-processed
+  labels:
+    strimzi.io/cluster: payment-kafka
+  namespace: payment-infra
+spec:
+  config:
+    retention.ms: 30000
+    segment.bytes: 1073741824
+  partitions: 10
+  replicas: 3
+
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: valid-payments
+  labels:
+    strimzi.io/cluster: payment-kafka
+  namespace: payment-infra
+spec:
+  config:
+    retention.ms: 604800000
+    segment.bytes: 1073741824
+  partitions: 10
+  replicas: 3
+
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: invalid-payments
   labels:
     strimzi.io/cluster: payment-kafka
   namespace: payment-infra

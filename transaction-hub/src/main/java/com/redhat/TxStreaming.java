@@ -29,12 +29,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import com.redhat.Processor.PaymentProcessor;
 
-import java.util.Map;
 import java.util.HashMap;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 @SuppressWarnings("deprecation")
 public class TxStreaming {
+
+    private static final Logger LOG = Logger.getLogger(TxStreaming.class);
 
     @ConfigProperty(name = "inbound.tx_topic")
     public String INBOUND_TX_TOPIC;
@@ -60,33 +62,31 @@ public class TxStreaming {
                 .withLoggingEnabled(new HashMap<>());
 
         // Inbound Acknowledgement Queue which will be joined
-        KStream<String, String> acks = builder.stream(INBOUND_ACK_TOPIC, Consumed.with(Serdes.String(), Serdes.String()));
+        KStream<String, String> txs = builder.stream(INBOUND_TX_TOPIC, Consumed.with(Serdes.String(), Serdes.String()));
 
         // Initial Builder Stream to join inbound_tx with inbound_ack and send it to the
         // processed queue
-        builder.stream(INBOUND_TX_TOPIC, Consumed.with(Serdes.String(), Serdes.String()))
-                .outerJoin(acks, (transaction, ack) -> {
+        builder.stream(INBOUND_ACK_TOPIC, Consumed.with(Serdes.String(), Serdes.String()))
+                .outerJoin(txs, (ack, transaction ) -> {
                     String ackedMsg = new String();
                     ObjectMapper mapper = new ObjectMapper();
                     ObjectNode json = mapper.createObjectNode();
-                    System.out.println("Joined....");
                     try {
                         if (null != transaction) {
-                            System.out.println("Has Tx....");
+                            LOG.info("stream >>>> Found Transaction");
                             json.put("transaction", transaction);
                         }
 
                         if (null != ack) {
-                            System.out.println("Has ack....");
+                            LOG.info("stream >>>> Found Acknowledgement");
                             json.put("acknowledgement", ack);
                         }
                         ackedMsg = mapper.writeValueAsString(json);
-                        System.out.println("Acked : " + mapper.writeValueAsString(json));
 
                     } catch (com.fasterxml.jackson.core.JsonProcessingException je) {
-                        System.out.println("Error : " + je.getMessage());
+                        LOG.error("Error : " + je.getMessage());
                     }
-                    System.out.println("Done....");
+                    LOG.info("stream >>>> Processing Message");
                     return ackedMsg;
                 }, JoinWindows.of(Duration.ofSeconds(10)),
                         Joined.with(Serdes.String(), Serdes.String(), Serdes.String()))
@@ -96,9 +96,10 @@ public class TxStreaming {
         final Topology topology = builder.build();
 
         // Attach the messages from the Join Queue to a Source and name it InboundTX
-        topology.addSource(INBOUND_TX_TOPIC, new StringDeserializer(), new StringDeserializer(), "outbound-ack");
+        topology.addSource("InboundTX", new StringDeserializer(), new StringDeserializer(), "outbound-ack");
 
-        // Attach the processor to the flow, and attache the Source created above to it.
+        // Attach the processor to the flow, and attach the Source created above to it.
+
         topology.addProcessor("TransactionProcessor", new ProcessorSupplier<String, String>() {
             public Processor<String, String> get() {
                 return new PaymentProcessor();

@@ -1,6 +1,6 @@
 package com.redhat;
 
-import java.util.Random;
+import org.jboss.logging.Logger;
 
 import javax.inject.Inject;
 import javax.ws.rs.PUT;
@@ -10,69 +10,100 @@ import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 
 import io.smallrye.reactive.messaging.kafka.Record;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.redhat.model.*;
-
-
+import java.util.Map;
+import com.redhat.helpers.TransactionHelper;
 
 @Path("/tx-gen")
 public class TransactionGenerator {
-    
-    private static final String INBOUND_TX_TOPIC="inbound-tx" ;
-    private static final String INBOUND_ACK_TOPIC="inbound-ack";
 
-    @Inject @Channel(INBOUND_TX_TOPIC) Emitter<Record<String, String>> emitter;
-    @Inject @Channel(INBOUND_ACK_TOPIC) Emitter<Record<String, String>> ackemitter;
-    
-    private Random random = new Random();
+    private static final Logger LOG = Logger.getLogger(TransactionGenerator.class);
 
+    private static final String INBOUND_TX_TOPIC = "inbound-tx";
+    private static final String INBOUND_ACK_TOPIC = "inbound-ack";
 
- 
+    @Inject
+    @Channel(INBOUND_TX_TOPIC)
+    Emitter<Record<String, String>> emitter;
+    @Inject
+    @Channel(INBOUND_ACK_TOPIC)
+    Emitter<Record<String, String>> ackemitter;
 
     @PUT
     @Path("/sendOne")
-    public void sendRecord(){
-
-        System.out.println("Sending.....");
+    public void sendRecord() {
+        TransactionHelper helper = new TransactionHelper();
         ObjectMapper mapper = new ObjectMapper();
-        String txID = "TXID"+String.valueOf(random.nextGaussian() * 15);
-        Transaction tx = new Transaction();
-        String txKey = String.valueOf(random.nextGaussian() * 15);
-        tx.setTxID(txID);
-        tx.setTxState("Inflight");
-        tx.setAck(false);
-        try {
-            String jsonTx = mapper.writeValueAsString(tx);
-            emitter.send(Record.of(txKey, jsonTx));
-            System.out.println("Sent Transaction");
-        } catch (com.fasterxml.jackson.core.JsonProcessingException je){
-            System.out.println("Tx Error :" + je.getMessage());
+
+        LOG.info("generateOne >>>> sending message");
+        Map<String, Transaction> txs = helper.generateTransactions(1);
+        Map<String, Ack> acks = helper.generateAcks();
+
+        if(acks.size() != txs.size()){
+            LOG.error("generateOne >>>> Invalid number of acks("+acks.size()+")/txs("+txs.size()+")");
         }
 
-        Ack ack = new Ack();
-        ack.setAckID("ACKID"+String.valueOf(random.nextGaussian() * 15));
-        ack.setTxID(txID);
-        ack.setStatus("ACK");
-        try {
-            String jsonAck = mapper.writeValueAsString(ack);
-            ackemitter.send(Record.of(txKey, jsonAck));
-            System.out.println("Sent Ack");
-        } catch (com.fasterxml.jackson.core.JsonProcessingException je){
-            System.out.println("Ack Error :" + je.getMessage());
-        }
-        System.out.println("Sent.....");
+        txs.forEach((key, tx) -> {
+            try{
+                String jsonTx = mapper.writeValueAsString(tx);
+                emitter.send(Record.of(key, jsonTx));
+                String jsonAck = mapper.writeValueAsString(acks.get(key));
+                ackemitter.send(Record.of(key, jsonAck));
+            }catch( JsonProcessingException jpe){
+                LOG.error("generateOne >>>> "+jpe.getMessage());
+            }
+        });
 
     }
 
-    // public Record<String, String> sendTransaction() {
-    //     String txID = String.valueOf(random.nextGaussian() * 15);
-    //     String txKey = "TXID"+String.valueOf(random.nextGaussian() * 15);
+    @PUT
+    @Path("/send/{number:\\d+}")
+    public void sendRecord(int number) {
+        TransactionHelper helper = new TransactionHelper();
+        ObjectMapper mapper = new ObjectMapper();
 
-    //     System.out.println("Writing message");
+        LOG.info("generateMany >>>> sending messages");
+        Map<String, Transaction> txs = helper.generateTransactions(number);
+        Map<String, Ack> acks = helper.generateAcks();
 
-    //     return Record.of(txKey, txID);
+        if(acks.size() != txs.size()){
+            LOG.error("generateMany >>>> Invalid number of acks("+acks.size()+")/txs("+txs.size()+")");
+        }
 
-    // }
+        txs.forEach((key, tx) -> {
+            try{
+                String jsonTx = mapper.writeValueAsString(tx);
+                emitter.send(Record.of(key, jsonTx));
+                String jsonAck = mapper.writeValueAsString(acks.get(key));
+                ackemitter.send(Record.of(key, jsonAck));
+            }catch( JsonProcessingException jpe){
+                LOG.error("generateMany >>>> "+jpe.getMessage());
+            }
+        });
 
+    }
+
+    @PUT
+    @Path("/sendNoAck")
+    public void sendRecordNoAck() {
+        TransactionHelper helper = new TransactionHelper();
+        ObjectMapper mapper = new ObjectMapper();
+
+        LOG.info("generateNoAck >>>> sending message with no Ack");
+        Map<String, Transaction> txs = helper.generateTransactions(1);
+
+        txs.forEach((key, tx) -> {
+            try{
+                String jsonTx = mapper.writeValueAsString(tx);
+                emitter.send(Record.of(key, jsonTx));
+            }catch( JsonProcessingException jpe){
+                LOG.error("generateNoAck >>>> "+jpe.getMessage());
+            }
+        });
+
+    }
 }
