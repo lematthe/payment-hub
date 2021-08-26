@@ -1,5 +1,12 @@
 package com.redhat.model;
 
+import java.io.IOException;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
@@ -76,13 +83,24 @@ public class Transaction {
 
     @Override
     public String toString() {
-        return "Transaction { txID=" + txID + 
-        ", txType="+txType+
-        ", requestedAmount=" + Double.toString(requestedAmount)+
-        ", txState="+txState+
-        ", countryCode="+countryCode+
-        ", institutionID="+institutionID+
-        + '}';
+        return "Transaction { txID=" + txID + ", txType=" + txType + ", requestedAmount="
+                + Double.toString(requestedAmount) + ", txState=" + txState + ", countryCode=" + countryCode
+                + ", institutionID=" + institutionID + +'}';
+    }
+
+    @JsonCreator
+    public static Transaction Create(String jsonString) {
+
+        Transaction tx = null;
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            tx = mapper.readValue(jsonString, Transaction.class);
+        } catch (IOException e) {
+            // handle
+            
+        }
+
+        return tx;
     }
 
 }

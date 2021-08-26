@@ -1,5 +1,10 @@
 package com.redhat.model;
 
+import java.io.IOException;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
@@ -69,5 +74,19 @@ public class Ack {
         ", ackNotes="+ackNotes+
         ", ackStatus="+ackStatus
         + '}';
+    }
+    @JsonCreator
+    public static Ack Create(String jsonString) {
+
+        Ack ack = null;
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            ack = mapper.readValue(jsonString, Ack.class);
+        } catch (IOException e) {
+            // handle
+            
+        }
+
+        return ack;
     }
 }

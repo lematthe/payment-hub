@@ -58,6 +58,9 @@ public class TransactionGenerator {
             }
         });
 
+
+        helper.clearTransactions();
+
     }
 
     @PUT
@@ -85,6 +88,8 @@ public class TransactionGenerator {
             }
         });
 
+        helper.clearTransactions();
+
     }
 
     @PUT
@@ -105,5 +110,6 @@ public class TransactionGenerator {
             }
         });
 
+        helper.clearTransactions();
     }
 }

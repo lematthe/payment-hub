@@ -52,7 +52,7 @@ public class TransactionHelper {
         Random rnd = new Random();
 
         String alphabet = "abcdefghijklmnopqrstuvwxyz";
-        int lengthOfName = rnd.nextInt(15);
+        int lengthOfName = rnd.nextInt(15)+1;
 
         for(int i=0; i<lengthOfName; i++ ){
             name += (alphabet.charAt(rnd.nextInt(alphabet.length())));
