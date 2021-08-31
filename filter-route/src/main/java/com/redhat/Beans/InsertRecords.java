@@ -12,16 +12,16 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 @RegisterForReflection
 public class InsertRecords {
     public String generatesql(Processed pTx){
-        return "INSERT INTO processeed (txid, txType, requestedAmount, txState, countryCode, institutionID, ackid, ackNotes, ackStatus) VALUES ("+
-        pTx.getTransaction().getTxID()+","+
-        pTx.getTransaction().getTxType()+","+
+        return "INSERT INTO processed (txid, txType, requestedAmount, txState, countryCode, institutionID, ackid, ackNotes, ackStatus) VALUES ("+
+        "\""+pTx.getTransaction().getTxID()+"\","+
+        "\""+pTx.getTransaction().getTxType()+"\","+
         pTx.getTransaction().getRequestedAmount()+","+
-        pTx.getTransaction().getTxState()+","+
-        pTx.getTransaction().getCountryCode()+","+
-        pTx.getTransaction().getInstitutionID()+","+
-        pTx.getAcknowledgement().getAckID()+","+
-        pTx.getAcknowledgement().getAckNotes()+","+
-        pTx.getAcknowledgement().getAckStatus()+")";                           
+        "\""+pTx.getTransaction().getTxState()+"\","+
+        "\""+pTx.getTransaction().getCountryCode()+"\","+
+        "\""+pTx.getTransaction().getInstitutionID()+"\","+
+        "\""+pTx.getAcknowledgement().getAckID()+"\","+
+        "\""+pTx.getAcknowledgement().getAckNotes()+"\","+
+        "\""+pTx.getAcknowledgement().getAckStatus()+"\")";                   
     }
     
 }

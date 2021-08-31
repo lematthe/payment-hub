@@ -113,7 +113,37 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: invalid-payments
+  name: invalid-transactions
+  labels:
+    strimzi.io/cluster: payment-kafka
+  namespace: payment-infra
+spec:
+  config:
+    retention.ms: 604800000
+    segment.bytes: 1073741824
+  partitions: 10
+  replicas: 3
+
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: invalid-transactions
+  labels:
+    strimzi.io/cluster: payment-kafka
+  namespace: payment-infra
+spec:
+  config:
+    retention.ms: 604800000
+    segment.bytes: 1073741824
+  partitions: 10
+  replicas: 3
+
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: invalid-acks
   labels:
     strimzi.io/cluster: payment-kafka
   namespace: payment-infra

@@ -37,6 +37,7 @@ import org.jboss.logging.Logger;
 public class TxStreaming {
 
     private static final Logger LOG = Logger.getLogger(TxStreaming.class);
+
     /* Attach the values from application.properties to various TOPIC names for use in the Topology*/
     @ConfigProperty(name = "inbound.tx_topic")
     public String INBOUND_TX_TOPIC;

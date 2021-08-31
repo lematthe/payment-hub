@@ -1,0 +1,26 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: failedacks
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/target: "1"
+        autoscaling.knative.dev/window: 16s
+    spec:
+      containers:
+      - image: image-registry.openshift-image-registry.svc:5000/payment-hub/process-failed-ack:1.0.0-SNAPSHOT
+        resources:
+          requests:
+            memory: "50Mi"
+            cpu: "100m"
+          limits:
+            memory: "70Mi"
+            cpu: "100m"
+        livenessProbe:
+          httpGet:
+            path: /healthz
+        readinessProbe:
+          httpGet:
+            path: /healthz

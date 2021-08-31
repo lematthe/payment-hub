@@ -25,7 +25,7 @@ spec:
         - name: kafdrop
           env:
             - name: KAFKA_BROKERCONNECT
-              value: "payment-kafka-kafka-bootstrap:9092"
+              value: "payment-kafka-kafka-bootstrap.payment-infra.svc:9092"
           imagePullPolicy: IfNotPresent
           image: obsidiandynamics/kafdrop
           ports:

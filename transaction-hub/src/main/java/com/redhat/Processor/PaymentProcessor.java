@@ -26,7 +26,6 @@ public class PaymentProcessor implements Processor<String, String> {
 
     @Override
     public void close() {
-        // TODO Auto-generated method stub
 
     }
 

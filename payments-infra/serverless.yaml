@@ -1,0 +1,17 @@
+apiVersion: eventing.knative.dev/v1alpha1
+kind: KnativeKafka
+metadata:
+  name: knative-eventing-kafka
+  namespace: knative-eventing
+spec:
+  bootstrapServers: 'payment-kafka-kafka-bootstrap.payment-infra.svc:9092'
+  setAsDefaultChannelProvisioner: false
+
+oc -n kafka run kafka-producer \
+    -ti --image=quay.io/strimzi/kafka:latest-kafka-2.7.0 --rm=true \
+    --restart=Never -- bin/kafka-console-producer.sh \
+    --broker-list payment-kafka-kafka-bootstrap.payment-infra.svc:9092  --topic invalid-acks
+
+    kn service create process-failed-acks --image image-registry.openshift-image-registry.svc:5000/payment-hub/process-failed-ack:1.0.0-SNAPSHOT
+
+    kn source kafka create invalid-ack --servers payment-kafka-kafka-bootstrap.payment-infra.svc:9092 --topics invalid-acks --consumergroup ack-serverless --sink process-failed-acks

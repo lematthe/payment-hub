@@ -21,18 +21,19 @@ public class FilterRoute extends RouteBuilder{
                     .when().jsonpath("$.acknowledgement", true)
                         .unmarshal()
                         .json(JsonLibrary.Jackson, Processed.class)
-                        .bean("myNamedBean", "gensql")
+                        .bean("gensql", "generatesql")
                         .log("${body}")
-                        .to("sql:${body}")
+                        .to("sql:ignored?useMessageBodyForSql=true")
                     .otherwise()
                         .log("NO ACK")
+                        .to("kafka:invalid-transactions?brokers=payment-kafka-kafka-bootstrap.payment-infra.svc:9092")
                 .endChoice()
             .when().jsonpath("$.acknowledgement")
                 .log("No TX")
+                .to("kafka:invalid-acks?brokers=payment-kafka-kafka-bootstrap.payment-infra.svc:9092")
             .otherwise()
                 .log("NONE")
         .end();
         
     }
-    
 }

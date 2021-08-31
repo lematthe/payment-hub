@@ -1,0 +1,11 @@
+apiVersion: eventing.knative.dev/v1alpha1
+kind: KnativeKafka
+metadata:
+  name: knative-kafka
+  namespace: knative-eventing
+spec:
+  channel:
+    enabled: true
+    bootstrapServers: 'payment-kafka-kafka-bootstrap.payment-infra.svc:9092'
+  source:
+    enabled: true
