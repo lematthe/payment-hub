@@ -33,7 +33,7 @@ public class PaymentProcessor implements Processor<String, String> {
     public void init(ProcessorContext context) {
         this.context = context;
         txStore = (KeyValueStore<String, String>) context.getStateStore("tx-missing-store");
-        // schedule a punctuate() method every 10 seconds based on stream-time
+        // schedule a punctuate() method every 60 seconds based on stream-time
         this.context.schedule(Duration.ofSeconds(60), PunctuationType.WALL_CLOCK_TIME, new Punctuator() {
 
             @Override

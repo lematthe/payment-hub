@@ -1,0 +1,29 @@
+{
+  "files": {
+    "main.css": "/static/css/main.a617e044.chunk.css",
+    "main.js": "/static/js/main.d91a0fbc.chunk.js",
+    "main.js.map": "/static/js/main.d91a0fbc.chunk.js.map",
+    "runtime-main.js": "/static/js/runtime-main.d180cac6.js",
+    "runtime-main.js.map": "/static/js/runtime-main.d180cac6.js.map",
+    "static/css/2.d51dfb0f.chunk.css": "/static/css/2.d51dfb0f.chunk.css",
+    "static/js/2.7cd79427.chunk.js": "/static/js/2.7cd79427.chunk.js",
+    "static/js/2.7cd79427.chunk.js.map": "/static/js/2.7cd79427.chunk.js.map",
+    "static/js/3.adf487f9.chunk.js": "/static/js/3.adf487f9.chunk.js",
+    "static/js/3.adf487f9.chunk.js.map": "/static/js/3.adf487f9.chunk.js.map",
+    "index.html": "/index.html",
+    "static/css/2.d51dfb0f.chunk.css.map": "/static/css/2.d51dfb0f.chunk.css.map",
+    "static/css/main.a617e044.chunk.css.map": "/static/css/main.a617e044.chunk.css.map",
+    "static/js/2.7cd79427.chunk.js.LICENSE.txt": "/static/js/2.7cd79427.chunk.js.LICENSE.txt",
+    "static/media/patternfly.css": "/static/media/pficon.a32f4243.woff",
+    "static/media/logo.6ce24c58.svg": "/static/media/logo.6ce24c58.svg",
+    "static/media/background-image.css": "/static/media/pfbg_768@2x.eea28e73.jpg",
+    "static/media/about-modal-box.css": "/static/media/pfbg_992@2x.30e8d31f.jpg"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.d180cac6.js",
+    "static/css/2.d51dfb0f.chunk.css",
+    "static/js/2.7cd79427.chunk.js",
+    "static/css/main.a617e044.chunk.css",
+    "static/js/main.d91a0fbc.chunk.js"
+  ]
+}

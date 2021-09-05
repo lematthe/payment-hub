@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.io.IOException;
 import javax.inject.Inject;
+import java.util.Random;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,10 +52,12 @@ public class ProcessFailedTx extends RouteBuilder {
     Processor insertDB = new DBProcessor();
 
     // Write your routes here, for example:
-    from("kafka:invalid-transactions?brokers=payment-kafka-kafka-bootstrap.payment-infra.svc:9092")
-        .routeId("invalid-transactions").process(insertDB).to("log:info?showBody=true")
-        .log("INSERT INTO orphan_tx (txID, txType, requestedAmount, countryCode, institutionID) VALUES (${body[transaction][txID]}, ${body[transaction][txType]}, ${body[transaction][requestedAmount]}, ${body[transaction][countryCode]}, ${body[transaction][institutionID]})")
-        .setBody(simple("INSERT INTO orphan_tx (txID, txType, requestedAmount, countryCode, institutionID) VALUES (${body[transaction][txID]},"+ 
+    from("kafka:invalid-transactions?brokers=payment-kafka-kafka-bootstrap.payment-hub.svc:9092")
+        .routeId("invalid-transactions")
+        .process(insertDB)
+        .to("log:info?showBody=true")
+        .log("INSERT INTO orphan_tx (id, txID, txType, requestedAmount, countryCode, institutionID) VALUES (${body[transaction][id]}. ${body[transaction][txID]}, ${body[transaction][txType]}, ${body[transaction][requestedAmount]}, ${body[transaction][countryCode]}, ${body[transaction][institutionID]})")
+        .setBody(simple("INSERT INTO orphan_tx (id, txID, txType, requestedAmount, countryCode, institutionID) VALUES (${body[transaction][id]}, ${body[transaction][txID]},"+ 
         "'${body[transaction][txType]}', ${body[transaction][requestedAmount]}, '${body[transaction][countryCode]}', '${body[transaction][institutionID]}')"))
           .to("jdbc:mysqlBean");
 
@@ -64,7 +67,7 @@ public class ProcessFailedTx extends RouteBuilder {
     @Override
     public void process(Exchange exchange) throws Exception {
       @SuppressWarnings("unchecked")
-      //OrphanedTX otx = exchange.getMessage().getBody(OrphanedTX.class);
+      Random rnd = new Random();
       ObjectMapper mapper = new ObjectMapper();
       try {
           JsonNode parentNode = mapper.readTree(exchange.getMessage().getBody(String.class));
@@ -72,19 +75,14 @@ public class ProcessFailedTx extends RouteBuilder {
           Iterator<String> it = parentNode.fieldNames();
           while(it.hasNext()){
             String name = it.next();
-            System.out.println("Name "+name);
             JsonNode root = parentNode.get(name);
 
             JsonNode tx = mapper.readTree(root.asText());
 
             Iterator<String> in = tx.fieldNames();
-
-            // while(in.hasNext()){
-            //   String field = in.next();
-            //   System.out.println("Field :: "+field+" Value ::: "+tx.get(field));
-            // }
-
             Map<String, Object> outputBody = new HashMap<String, Object>();
+
+            outputBody.put("id", rnd.nextInt(500000));
             outputBody.put("txID", tx.get("txID"));
             outputBody.put("txType", tx.get("txType"));
             outputBody.put("requestedAmount", tx.get("requestedAmount"));

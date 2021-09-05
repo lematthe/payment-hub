@@ -10,6 +10,8 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 @RegisterForReflection
 public class Ack {
 
+    
+    private String id;
     private String ackID;
     private String txID;
     private double confirmedAmount;
@@ -19,12 +21,21 @@ public class Ack {
     public Ack() {
     }
 
-    public Ack(String ackID, String txID, double confirmedAmount, String ackNotes, String ackStatus) {
+    public Ack(String id, String ackID, String txID, double confirmedAmount, String ackNotes, String ackStatus) {
+        this.id = id;
         this.ackID = ackID;
         this.txID = txID;
         this.confirmedAmount = confirmedAmount;
         this.ackNotes = ackNotes;
         this.ackStatus = ackStatus;
+    }
+
+    public String getId(){
+        return this.id;
+    }
+
+    public void setId(String id){
+        this.id = id;
     }
     public String getAckID() {
         return ackID;

@@ -38,7 +38,10 @@ public class TxStreaming {
 
     private static final Logger LOG = Logger.getLogger(TxStreaming.class);
 
-    /* Attach the values from application.properties to various TOPIC names for use in the Topology*/
+    /*
+     * Attach the values from application.properties to various TOPIC names for use
+     * in the Topology
+     */
     @ConfigProperty(name = "inbound.tx_topic")
     public String INBOUND_TX_TOPIC;
 
@@ -57,8 +60,10 @@ public class TxStreaming {
     @Produces
     public Topology buildTopology() {
         StreamsBuilder builder = new StreamsBuilder();
-        /* The K,V store for saving the 'orphaned' TX or ACK if both parts are not JOINED in the intial
-           topology */
+        /*
+         * The K,V store for saving the 'orphaned' TX or ACK if both parts are not
+         * JOINED in the intial topology
+         */
         StoreBuilder<KeyValueStore<String, String>> txStore = Stores
                 .keyValueStoreBuilder(Stores.persistentKeyValueStore(TX_STORE), Serdes.String(), Serdes.String())
                 .withLoggingEnabled(new HashMap<>());
@@ -66,10 +71,13 @@ public class TxStreaming {
         // Inbound Acknowledgement Queue which will be joined
         KStream<String, String> txs = builder.stream(INBOUND_TX_TOPIC, Consumed.with(Serdes.String(), Serdes.String()));
 
-        /* The initial topology is going to trigger when either an ACK or TX is placed on the appropriate topic
-           It will then attempt a JOIN before streaming it to the outbound topic*/
+        /*
+         * The initial topology is going to trigger when either an ACK or TX is placed
+         * on the appropriate topic It will then attempt a JOIN before streaming it to
+         * the outbound topic
+         */
         builder.stream(INBOUND_ACK_TOPIC, Consumed.with(Serdes.String(), Serdes.String()))
-                .outerJoin(txs, (ack, transaction ) -> {
+                .outerJoin(txs, (ack, transaction) -> {
                     String ackedMsg = new String();
                     ObjectMapper mapper = new ObjectMapper();
                     ObjectNode json = mapper.createObjectNode();
@@ -92,18 +100,22 @@ public class TxStreaming {
                     return ackedMsg;
                 }, JoinWindows.of(Duration.ofSeconds(10)),
                         Joined.with(Serdes.String(), Serdes.String(), Serdes.String()))
-                .groupByKey(Grouped.with(Serdes.String(), Serdes.String())).reduce(((key, lastValue) -> lastValue))
-                .toStream().to("outbound-ack", Produced.with(Serdes.String(), Serdes.String()));
+                .groupByKey(Grouped.with(Serdes.String(), Serdes.String()))
+                .reduce(((key, lastValue) -> lastValue))
+                .toStream()
+                .to("outbound-ack", Produced.with(Serdes.String(), Serdes.String()));
 
         final Topology topology = builder.build();
 
-        /* Messages that consumed during the JOIN will be passed to the nexy topic*/
+        /* Messages that consumed during the JOIN will be passed to the nexy topic */
         topology.addSource("InboundTX", new StringDeserializer(), new StringDeserializer(), "outbound-ack");
 
-        /* From the Source above, the processor will execute and based on whether the JOIN succeeded
-            will either forward on the message to the SINK (if it has both the TX and ACK),
-            determine if the missing part of the TX/ACK is stored and forward them both on or store
-            in the K,V store for handling later*/
+        /*
+         * From the Source above, the processor will execute and based on whether the
+         * JOIN succeeded will either forward on the message to the SINK (if it has both
+         * the TX and ACK), determine if the missing part of the TX/ACK is stored and
+         * forward them both on or store in the K,V store for handling later
+         */
 
         topology.addProcessor("TransactionProcessor", new ProcessorSupplier<String, String>() {
             public Processor<String, String> get() {
@@ -111,21 +123,22 @@ public class TxStreaming {
             }
         }, "InboundTX");
 
-        /* When the message has been processed by the TransactionProcessor, the commit function will
-           automatically wirte it to the topic below.*/
+        /*
+         * When the message has been processed by the TransactionProcessor, the commit
+         * function will automatically wirte it to the topic below.
+         */
         topology.addSink("Sink", PROCESSED_TRANSACTIONS, new StringSerializer(), new StringSerializer(),
                 "TransactionProcessor");
 
         // Add the state store
         topology.addStateStore(txStore, "TransactionProcessor");
 
-
-        /* Topology description will display the sub topologies to give a sense of the flow through
-           the streaming application. */
+        /*
+         * Topology description will display the sub topologies to give a sense of the
+         * flow through the streaming application.
+         */
         TopologyDescription td = topology.describe();
         LOG.info(td.toString());
-
-        
 
         return topology;
     }

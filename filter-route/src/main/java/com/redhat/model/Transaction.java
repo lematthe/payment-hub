@@ -10,6 +10,7 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 @RegisterForReflection
 public class Transaction {
 
+    private String id;
     private String txID;
     private String txType;
     private double requestedAmount;
@@ -20,15 +21,24 @@ public class Transaction {
     public Transaction() {
     }
 
-    public Transaction(String txID, String txType, double requestedAmount, String txState, String countryCode,
+    public Transaction(String id, String txID, String txType, double requestedAmount, String txState, String countryCode,
             String institutionID) {
 
+        this.id = id;
         this.txID = txID;
         this.txType = txType;
         this.requestedAmount = requestedAmount;
         this.txState = txState;
         this.countryCode = countryCode;
         this.institutionID = institutionID;
+    }
+
+    public String getId(){
+        return this.id;
+    }
+
+    public void setId(String id){
+        this.id = id;
     }
 
     public String getTxID() {
