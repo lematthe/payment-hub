@@ -13,12 +13,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.transaction.Transactional;
 
-import com.redhat.model.Ack;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.redhat.Model.Ack;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 
-import java.io.IOException;
 
 @Path("/")
 public class ProcessFailedAck {
@@ -37,12 +35,12 @@ public class ProcessFailedAck {
             JsonNode root = parentNode.get("acknowledgement");
             ack = mapper.readValue(root.asText(), Ack.class);
         } catch (IOException e) {
-            LOG.info(e.getMessage());
+            LOG.info("Error: "+ e.getMessage());
             
         }
         if (null != ack){
-            LOG.info("We have an ack >> "+ack.ackID);
-            ack.persist();
+            LOG.info("We have an ack >> "+ack.getAckID());
+            ack.persistAndFlush();
         }
         return Response.ok().build();
     }

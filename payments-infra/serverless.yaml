@@ -7,4 +7,4 @@ oc -n kafka run kafka-producer \
 
     
     
-    kn source kafka create invalid-ack --servers payment-kafka-kafka-bootstrap.payment-hub.svc:9092 --topics invalid-acks --consumergroup ack-serverless --sink process-failed-acks
+    kn source kafka create invalid-ack --servers payment-kafka-kafka-bootstrap.payment-hub.svc:9092 --topics invalid-acks --consumergroup ack-serverless --sink  failedacks

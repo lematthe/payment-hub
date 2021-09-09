@@ -1,16 +1,18 @@
-package com.redhat.model;
+package com.redhat.Model;
 
 import java.io.IOException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
+
 @RegisterForReflection
+@JsonIgnoreProperties(value = { "id" })
 public class Ack {
 
-    
     private String id;
     private String ackID;
     private String txID;
@@ -22,6 +24,7 @@ public class Ack {
     }
 
     public Ack(String id, String ackID, String txID, double confirmedAmount, String ackNotes, String ackStatus) {
+
         this.id = id;
         this.ackID = ackID;
         this.txID = txID;
@@ -30,13 +33,6 @@ public class Ack {
         this.ackStatus = ackStatus;
     }
 
-    public String getId(){
-        return this.id;
-    }
-
-    public void setId(String id){
-        this.id = id;
-    }
     public String getAckID() {
         return ackID;
     }

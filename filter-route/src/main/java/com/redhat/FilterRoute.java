@@ -2,10 +2,10 @@ package com.redhat;
 
 import javax.enterprise.context.ApplicationScoped;
 
+import com.redhat.Model.Processed;
+
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
-
-import com.redhat.model.*;
 
 @ApplicationScoped
 public class FilterRoute extends RouteBuilder{
@@ -20,16 +20,18 @@ public class FilterRoute extends RouteBuilder{
                 .choice()
                     .when().jsonpath("$.acknowledgement", true)
                         .log("${body}")
-                        .unmarshal().json(JsonLibrary.Jackson, Processed.class)
+                        .bean("formatdata","genProcessed")
                         .bean("gensql", "generatesql")
                         .log("${body}")
                         .to("sql:ignored?useMessageBodyForSql=true")
                     .otherwise()
                         .log("NO ACK")
+                        .log("${body}")
                         .to("kafka:invalid-transactions?brokers=payment-kafka-kafka-bootstrap.payment-hub.svc:9092")
                 .endChoice()
             .when().jsonpath("$.acknowledgement")
                 .log("No TX")
+                .log("${body}")
                 .to("kafka:invalid-acks?brokers=payment-kafka-kafka-bootstrap.payment-hub.svc:9092")
             .otherwise()
                 .log("NONE")

@@ -4,6 +4,7 @@ import React from 'react'
 const Txs = ({ txs }) => {
     return (
         <div>
+            <div><h2>Number of Orphaned Transactions: {txs.length}</h2></div>            
             <table class="pf-c-table pf-m-grid-md" role="grid" aria-label="Orphaned Transactions" id="table-basic" >
                 <caption>Orphaned Transactions</caption>
                 <thead>
@@ -16,19 +17,18 @@ const Txs = ({ txs }) => {
                         <th role="columnheader" scope="col">Institution ID</th>
                     </tr>
                 </thead>
-                    {txs?.map((tx) => (
-                        <tbody role="rowgroup">
-                            <tr role="row">
-                                <td role="cell" data-label="Transaction ID">{tx.txID}</td>                                
-                                <td role="cell" data-label="Transaction Type">{tx.txType}</td>
-                                <td role="cell" data-label="Requested Amount">{tx.requestedAmount}</td>
-                                <td role="cell" data-label="State">{tx.txState}</td>
-                                <td role="cell" data-label="Country Code">{tx.countryCode}</td>
-                                <td role="cell" data-label="Institution ID">{tx.institutionID}</td>
-                            </tr>
-                        </tbody>
-                    ))}
-                }
+                {txs?.map((tx) => (
+                    <tbody role="rowgroup">
+                        <tr role="row">
+                            <td role="cell" data-label="Transaction ID">{tx.txID}</td>
+                            <td role="cell" data-label="Transaction Type">{tx.txType}</td>
+                            <td role="cell" data-label="Requested Amount">{tx.requestedAmount}</td>
+                            <td role="cell" data-label="State">{tx.txState}</td>
+                            <td role="cell" data-label="Country Code">{tx.countryCode}</td>
+                            <td role="cell" data-label="Institution ID">{tx.institutionID}</td>
+                        </tr>
+                    </tbody>
+                ))}
             </table>
         </div>
 

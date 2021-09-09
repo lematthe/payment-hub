@@ -5,6 +5,8 @@ import org.jboss.logging.Logger;
 import javax.inject.Inject;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.DefaultValue;
 
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
@@ -16,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.redhat.model.*;
 import java.util.Map;
+
 import com.redhat.helpers.TransactionHelper;
 
 @Path("/tx-gen")
@@ -64,13 +67,13 @@ public class TransactionGenerator {
     }
 
     @PUT
-    @Path("/send/{number:\\d+}")
-    public void sendRecord(int number) {
+    @Path("/sendTxAck/{numtx}")
+    public void sendSome(@DefaultValue("1") @PathParam("numtx") int numtx) {
         TransactionHelper helper = new TransactionHelper();
         ObjectMapper mapper = new ObjectMapper();
 
         LOG.info("generateMany >>>> sending messages");
-        Map<String, Transaction> txs = helper.generateTransactions(number);
+        Map<String, Transaction> txs = helper.generateTransactions(numtx);
         Map<String, Ack> acks = helper.generateAcks();
 
         if(acks.size() != txs.size()){
@@ -113,6 +116,28 @@ public class TransactionGenerator {
         helper.clearTransactions();
     }
 
+
+    @PUT
+    @Path("/sendNoAck/{numacks}")
+    public void sendRecordNoAck(@DefaultValue("1") @PathParam("numacks") int numacks) {
+        TransactionHelper helper = new TransactionHelper();
+        ObjectMapper mapper = new ObjectMapper();
+
+        LOG.info("generateManyNoAck >>>> sending message with no Ack");
+        Map<String, Transaction> txs = helper.generateTransactions(numacks);
+
+        txs.forEach((key, tx) -> {
+            try{
+                String jsonTx = mapper.writeValueAsString(tx);
+                emitter.send(Record.of(key, jsonTx));
+            }catch( JsonProcessingException jpe){
+                LOG.error("generateManyNoAck >>>> "+jpe.getMessage());
+            }
+        });
+
+        helper.clearTransactions();
+    }
+
     @PUT
     @Path("/sendNoTx")
     public void sendRecordNoTx() {
@@ -120,7 +145,29 @@ public class TransactionGenerator {
         ObjectMapper mapper = new ObjectMapper();
 
         LOG.info("generateNoTx >>>> sending Ack with no Tx");
-        Map<String, Transaction> txs = helper.generateTransactions(1);
+        helper.generateTransactions(1);
+        Map<String, Ack> acks = helper.generateAcks();
+
+        acks.forEach((key, ack) -> {
+            try{
+                String jsonAck = mapper.writeValueAsString(ack);
+                ackemitter.send(Record.of(key, jsonAck));
+            }catch( JsonProcessingException jpe){
+                LOG.error("generateNoTx >>>> "+jpe.getMessage());
+            }
+        });
+
+        helper.clearTransactions();
+    }
+
+    @PUT
+    @Path("/sendNoTx/{numtx}")
+    public void sendRecordNoTx(@DefaultValue("1") @PathParam("numtx") int numtx) {
+        TransactionHelper helper = new TransactionHelper();
+        ObjectMapper mapper = new ObjectMapper();
+
+        LOG.info("generateNoTx >>>> sending Ack with no Tx");
+        helper.generateTransactions(numtx);
         Map<String, Ack> acks = helper.generateAcks();
 
         acks.forEach((key, ack) -> {

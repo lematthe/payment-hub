@@ -1,4 +1,4 @@
-package com.redhat.model;
+package com.redhat.Model;
 
 import java.io.IOException;
 

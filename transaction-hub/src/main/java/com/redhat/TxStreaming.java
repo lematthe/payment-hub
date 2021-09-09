@@ -21,6 +21,12 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.streams.state.KeyValueStore;
 
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.MediaType;
+
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -141,6 +147,13 @@ public class TxStreaming {
         LOG.info(td.toString());
 
         return topology;
+    }
+
+    @GET
+    @Path("/healthz")
+    @javax.ws.rs.Produces(MediaType.TEXT_PLAIN)
+    public Response health() {
+        return Response.ok().build();
     }
 
 }

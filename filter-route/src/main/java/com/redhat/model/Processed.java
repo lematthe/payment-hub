@@ -1,9 +1,15 @@
-package com.redhat.model;
+package com.redhat.Model;
+
+import org.jboss.logging.Logger;
+import com.redhat.Model.Transaction;
+import com.redhat.Model.Ack;
 
 public class Processed {
 
     private Transaction transaction;
     private Ack acknowledgement;
+
+    private static final Logger LOG = Logger.getLogger(Processed.class);
 
     public Processed() {
     }
@@ -12,7 +18,6 @@ public class Processed {
         if (null != acknowledgement) {
             this.acknowledgement = acknowledgement;
         }
-
         if (null != transaction) {
             this.transaction = transaction;
         }
