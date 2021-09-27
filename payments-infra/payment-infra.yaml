@@ -1,4 +1,0 @@
-oc new-project payment-hub
-oc new-project payment-infra
-
-oc project payment-infra

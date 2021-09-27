@@ -1,5 +1,10 @@
 import React from 'react';
-import { Tabs, Tab, TabTitleText, Checkbox } from '@patternfly/react-core';
+import {
+    Tabs, Tab, TabTitleText, Brand, Page, PageHeader, PageHeaderTools,
+    PageHeaderToolsGroup,
+    PageHeaderToolsItem
+} from '@patternfly/react-core';
+import rhLogo from '../images/Logo-RedHat-D-Color-RGB.png';
 import Acks from './acks'
 import Txs from './txs'
 import Processed from './processed'
@@ -19,32 +24,32 @@ class MainPage extends React.Component {
             this.setState({
                 activeTabKey: tabIndex
             });
-            switch(tabIndex) {
+            switch (tabIndex) {
                 case 0:
                     fetch('/ack')
-                    .then(res => res.json())
-                    .then((data) => {
-                        this.setState({ acks: data })
-                    })
-                    .catch(console.log)
+                        .then(res => res.json())
+                        .then((data) => {
+                            this.setState({ acks: data })
+                        })
+                        .catch(console.log)
 
                     break;
                 case 1:
                     fetch('/tx')
-                    .then(res => res.json())
-                    .then((data) => {
-                        this.setState({ txs: data })
-                    })
-                    .catch(console.log)
+                        .then(res => res.json())
+                        .then((data) => {
+                            this.setState({ txs: data })
+                        })
+                        .catch(console.log)
 
                     break;
                 case 2:
                     fetch('/processed')
-                    .then(res => res.json())
-                    .then((data) => {
-                        this.setState({ processed: data })
-                    })
-                    .catch(console.log)
+                        .then(res => res.json())
+                        .then((data) => {
+                            this.setState({ processed: data })
+                        })
+                        .catch(console.log)
 
                     break;
             }
@@ -52,11 +57,29 @@ class MainPage extends React.Component {
     }
 
     render() {
-        const { activeTabKey, isBox } = this.state;
+        const { activeTabKey } = this.state;
+
+        const headerTools = (
+            <PageHeaderTools>
+                <PageHeaderToolsGroup
+                    visibility={{
+                        default: 'hidden',
+                        lg: 'visible'
+                    }} /** the settings and help icon buttons are only visible on desktop sizes and replaced by a kebab dropdown for other sizes */
+                >
+                    <PageHeaderToolsItem>
+                    </PageHeaderToolsItem>
+                </PageHeaderToolsGroup>
+            </PageHeaderTools>
+                        );
+        const Header = (
+            <PageHeader logo={<Brand src={rhLogo} alt="Patternfly Logo" />} headerTools={headerTools} >Integration Demo </PageHeader>
+        );
 
         return (
             <div>
-                <Tabs activeKey={activeTabKey} onSelect={this.handleTabClick} isBox={isBox}>
+                <Page header={Header}>
+                <Tabs activeKey={activeTabKey} onSelect={this.handleTabClick}>
                     <Tab eventKey={0} title={<TabTitleText>Orphaned Acknowledgements</TabTitleText>}>
                         <Acks acks={this.state.acks} />
                     </Tab>
@@ -67,6 +90,7 @@ class MainPage extends React.Component {
                         <Processed processed={this.state.processed} />
                     </Tab>
                 </Tabs>
+                </Page>
             </div>
         );
     }
