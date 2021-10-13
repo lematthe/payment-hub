@@ -23,7 +23,6 @@ import java.io.IOException;
 public class Ack extends PanacheEntityBase{
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @JsonProperty("ackID")
@@ -48,7 +47,13 @@ public class Ack extends PanacheEntityBase{
         this.ackNotes = ackNotes;
         this.ackStatus = ackStatus;
     }
+    public Long getId() {
+        return id;
+    }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
     public String getAckID() {
         return ackID;
     }

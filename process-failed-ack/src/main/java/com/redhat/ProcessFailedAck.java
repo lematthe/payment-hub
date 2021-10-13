@@ -4,7 +4,7 @@ import org.jboss.logging.Logger;
 
 import java.io.IOException;
 
-import javax.ws.rs.Consumes;
+import java.util.Random;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -28,12 +28,15 @@ public class ProcessFailedAck {
     @Transactional
     public Response event(String event) {
         LOG.info("Invalid Ack: " + event);
+
+        Random rnd = new Random();
         Ack ack = null;
         try {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode parentNode = mapper.readTree(event);
             JsonNode root = parentNode.get("acknowledgement");
             ack = mapper.readValue(root.asText(), Ack.class);
+            ack.setId(Long.valueOf(rnd.nextInt(50000)));
         } catch (IOException e) {
             LOG.info("Error: "+ e.getMessage());
             
